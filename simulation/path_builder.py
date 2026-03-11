@@ -3,6 +3,9 @@
 
 import json
 import time
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR.parent / "data"
 
 MAX_PATH_LENGTH = 5
 
@@ -250,14 +253,14 @@ class path_builder:
 
 if __name__ == "__main__":
     pools = dict()
-    with open("/Users/christof/TLDR/Project/data/pools.json", "r") as f:
+    with open(DATA_DIR / "pools.json", "r") as f:
         pools = json.load(f)
     print("Number of Uniswap V2 pools:", colors.INFO, len([pool for pool in pools if pool["protocol"] == "uniswap" and pool["version"] == "v2"]), colors.END)
     print("Number of Uniswap V3 pools:", colors.INFO, len([pool for pool in pools if pool["protocol"] == "uniswap" and pool["version"] == "v3"]), colors.END)
     print()
     
     reserve_token_addresses = dict()
-    with open("/Users/christof/TLDR/Project/data/reserve_token_addresses.json", "r") as f:
+    with open(DATA_DIR / "reserve_token_addresses.json", "r") as f:
         reserve_token_addresses = json.load(f)
 
     print("Constructing paths...")
@@ -269,7 +272,7 @@ if __name__ == "__main__":
     print("Cross-Chain path construction took:", colors.INFO, time.time() - start, colors.END, "second(s).")
     print("Number of cross-chain paths:", colors.INFO, len(cross_chain_paths), colors.END)
 
-    with open("/Users/christof/TLDR/Project/data/cross_chain_paths.json", "w") as f:
+    with open(DATA_DIR / "cross_chain_paths.json", "w") as f:
         json.dump(cross_chain_paths, f, indent=2)
 
     print()
@@ -278,7 +281,7 @@ if __name__ == "__main__":
     print("Single-Chain path construction took:", colors.INFO, time.time() - start, colors.END, "second(s).")
     print("Number of single-chain paths:", colors.INFO, len(single_chain_paths), colors.END)
 
-    with open("/Users/christof/TLDR/Project/data/single_chain_paths.json", "w") as f:
+    with open(DATA_DIR / "single_chain_paths.json", "w") as f:
         json.dump(single_chain_paths, f, indent=2)
    
     """print("Analyzing Arbitrum arbitrages up to a swap length of", MAX_PATH_LENGTH)

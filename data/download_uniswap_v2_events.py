@@ -7,11 +7,13 @@ import time
 import json
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
 # INPUT
-STARTING_DATE = "2024-11-01"
-ENDING_DATE   = "2024-11-01"
-CHAINS        = ["arbitrum", "optimism", "base"] 
+STARTING_DATE = "2025-03-01"
+ENDING_DATE   = "2026-03-01"
+CHAINS        = ["arbitrum", "optimism"] 
 PATHS         = ["cross_chain_paths.json", "single_chain_paths.json"]
 
 # OUTPUT
@@ -25,11 +27,11 @@ class colors:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(colors.FAIL+"Error: Please provide an Allium API key to download Uniswap V2 events: 'python3 "+sys.argv[0]+" <ALLIUM_API_KEY>'"+colors.END)
-        sys.exit(-1)
-
-    allium_api_key = sys.argv[1]
+    load_dotenv()
+    allium_api_key = os.getenv("ALLIUM_API_KEY")
+    if not allium_api_key:
+        print("Error: Missing ALLIUM_API_KEY in .env")
+        sys.exit(1)
 
     if not any([os.path.exists(path) for path in PATHS]):
         print(colors.FAIL+"Error: Please run 'simulation/path_builder.py' first to create any of the '"+", ".join(PATHS)+"' files first!"+colors.END)
@@ -76,6 +78,12 @@ def main():
                     json={"parameters": {"chain": chain, "pools": str(list(pairs[chain])), "block_timestamp_start": start_date, "block_timestamp_end": end_date}, "run_config": {"limit": 250000}},
                     headers={"X-API-Key": allium_api_key}
                 )
+                print("status_code:", response.status_code)
+                print("response text:", response.text)
+
+                resp_json = response.json()
+                if "run_id" not in resp_json:
+                    raise ValueError(f"Allium did not return run_id. Response: {resp_json}")
                 query_run_id = response.json()["run_id"]
                 
                 # Poll for query run status

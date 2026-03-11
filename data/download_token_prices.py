@@ -7,6 +7,8 @@ import time
 import json
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
 # INPUT
 STARTING_DATE  = "2024-11-01"
@@ -24,11 +26,13 @@ class colors:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(colors.FAIL+"Error: Please provide an Allium API key to download token prices: 'python3 "+sys.argv[0]+" <ALLIUM_API_KEY>'"+colors.END)
-        sys.exit(-1)
+    # CHECKING API_KEY
+    load_dotenv()
+    allium_api_key = os.getenv("ALLIUM_API_KEY")
+    if not allium_api_key:
+        print("Error: Missing ALLIUM_API_KEY in .env")
+        sys.exit(1)
 
-    allium_api_key = sys.argv[1]
 
     if not os.path.exists(RESERVE_TOKENS):
         print(colors.FAIL+"Error: Please run 'extract_pools.py' first to create the '"+RESERVE_TOKENS+"' file first!"+colors.END)
