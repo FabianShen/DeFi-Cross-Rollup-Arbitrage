@@ -1,0 +1,462 @@
+{
+  "simulation_cross_chain": [
+    {
+      "profit_usd": 507.1458381173934,
+      "timestamp_range_start": 1730481168,
+      "timestamp_range_stop": 1730481170,
+      "block_number": null,
+      "chain": null,
+      "id": "0420dffb1b7b91e0a4c97fe9017c92f8b35c3795d96208af340f8333744467c0",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 506.8481888991366,
+      "timestamp_range_start": 1730484830,
+      "timestamp_range_stop": 1730484832,
+      "block_number": null,
+      "chain": null,
+      "id": "769953fa351d9fe00d6c7d8a22bd1c5a4bbe54fd7cccc0b8f8538d3738cb501a",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.71075219066245,
+      "timestamp_range_start": 1730484800,
+      "timestamp_range_stop": 1730484802,
+      "block_number": null,
+      "chain": null,
+      "id": "edba7218e8f8b8f69a14fc76fad01a2ae63fc54152a38145e32ee8583ca91dd9",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.42430906098707,
+      "timestamp_range_start": 1730484898,
+      "timestamp_range_stop": 1730484900,
+      "block_number": null,
+      "chain": null,
+      "id": "72b51ef5a729bdf5815683b37d43826f81411876c70f170b52a689595af55d56",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 506.4228872191845,
+      "timestamp_range_start": 1730484918,
+      "timestamp_range_stop": 1730484920,
+      "block_number": null,
+      "chain": null,
+      "id": "778bb305fb7f4655cc130766630cd9d4be88d8543d9c1240ed1fbb905fed01a7",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 506.40907057179936,
+      "timestamp_range_start": 1730484938,
+      "timestamp_range_stop": 1730484940,
+      "block_number": null,
+      "chain": null,
+      "id": "d6c80748155dbd86739f7e298139a559f89240313daa4d388ccdd330af7ddc45",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.3769745617858,
+      "timestamp_range_start": 1730484870,
+      "timestamp_range_stop": 1730484872,
+      "block_number": null,
+      "chain": null,
+      "id": "e3ba97864f6c48926f1eb0fa819434c0002a379cd1a69c19ca0ae34937ac5dac",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.3316903659571,
+      "timestamp_range_start": 1730484770,
+      "timestamp_range_stop": 1730484772,
+      "block_number": null,
+      "chain": null,
+      "id": "3104174eb3840a7efed303b673c27a9e3794a9cbd8b1c6a3eaadd11ab4e0d90f",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.3134613941546,
+      "timestamp_range_start": 1730484712,
+      "timestamp_range_stop": 1730484714,
+      "block_number": null,
+      "chain": null,
+      "id": "e67661e83cfa155bf90a5047591fb1b960fa85fbcb4945a95a17881eed0d30f8",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 506.284462676209,
+      "timestamp_range_start": 1730484948,
+      "timestamp_range_stop": 1730484950,
+      "block_number": null,
+      "chain": null,
+      "id": "de211d630c720c0032441f4d10aa6339f283e6df576829eaee426ac3234afc2d",
+      "number_of_profitable_non_conflicting_paths": 2
+    }
+  ],
+  "simulation_single_chain": [
+    {
+      "profit_usd": 116.80435992976669,
+      "timestamp_range_start": 1730483642,
+      "timestamp_range_stop": 1730483643,
+      "block_number": 269990092,
+      "chain": "arbitrum",
+      "id": "1c669a69a82dadc056a2f2fd7c28493379103ef39059b2db0b2390b78586cc0c",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 67.67422912305015,
+      "timestamp_range_start": 1730424689,
+      "timestamp_range_stop": 1730424690,
+      "block_number": 269755408,
+      "chain": "arbitrum",
+      "id": "4ba1bba96e40c44cdeefb325e1aec7c4c58ab3462d8bdc880cc8e0774b8a27c6",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 30.577505421028274,
+      "timestamp_range_start": 1730471809,
+      "timestamp_range_stop": 1730471810,
+      "block_number": 269943092,
+      "chain": "arbitrum",
+      "id": "85b9140ef7159a858ba1fbc3bd3924fbe369396250890fc65bfb1aaa64e3bf55",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 17.648821299482933,
+      "timestamp_range_start": 1730477411,
+      "timestamp_range_stop": 1730477412,
+      "block_number": 269965346,
+      "chain": "arbitrum",
+      "id": "70f69d19f82b0a6fe2574975a3ad6fd742d560024c080008e5a389ee6d0b5fb0",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 16.269339177973926,
+      "timestamp_range_start": 1730470381,
+      "timestamp_range_stop": 1730470382,
+      "block_number": 269937399,
+      "chain": "arbitrum",
+      "id": "32a4b2f2d85c219fd3f9d6207d2878374e79063004de9d87a88410893bb89c69",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 14.911726392280158,
+      "timestamp_range_start": 1730470400,
+      "timestamp_range_stop": 1730470401,
+      "block_number": 269937475,
+      "chain": "arbitrum",
+      "id": "bd4bd746b7acee8c81cc5cb5fe56dc1e8554d416b38443d51fc271c6729b449e",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 14.598143728051513,
+      "timestamp_range_start": 1730470382,
+      "timestamp_range_stop": 1730470383,
+      "block_number": 269937400,
+      "chain": "arbitrum",
+      "id": "0522ee0ea58de06a100308eacd841e9cda43e3bafd012c0609b450289967b889",
+      "number_of_profitable_non_conflicting_paths": 2
+    },
+    {
+      "profit_usd": 14.027133006383378,
+      "timestamp_range_start": 1730471839,
+      "timestamp_range_stop": 1730471840,
+      "block_number": 269943208,
+      "chain": "arbitrum",
+      "id": "f9dd4a39b801089299fc2a17db57dd961e8807d0cbf0e09ac3668e61d0e882c9",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 13.811508890613673,
+      "timestamp_range_start": 1730431044,
+      "timestamp_range_stop": 1730431045,
+      "block_number": 269780618,
+      "chain": "arbitrum",
+      "id": "e18998ca3f8d2b57cc5f8560eb387d9a1a864ab81b426478c6fe4bba17af7200",
+      "number_of_profitable_non_conflicting_paths": 1
+    },
+    {
+      "profit_usd": 10.276143071462771,
+      "timestamp_range_start": 1730476474,
+      "timestamp_range_stop": 1730476475,
+      "block_number": 269961608,
+      "chain": "arbitrum",
+      "id": "c1022e422d768e84ada6a89c3ff7965930df9bb77a79dc049eaf75e87f0ecf0b",
+      "number_of_profitable_non_conflicting_paths": 3
+    }
+  ],
+  "detection_arbitrum": [
+    {
+      "profit_usd": 290.11552939815346,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269778683,
+      "chain": null,
+      "id": "cc11748ce410905e241b07ebd332d60bd127ba008041ab4c118677e8cdf45e40",
+      "tx_hash": "95acb4209325a63a165376e1536726785051a7904bff24ad6c027d7e4fbd514e"
+    },
+    {
+      "profit_usd": 150.9490143465485,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269780619,
+      "chain": null,
+      "id": "abb0626d15e9915a121bf386787981caa9f4a5ba9410e8ae9244217a6205e4e2",
+      "tx_hash": "7d3348c894ae188ad25fd511e6b677d9338101325e2e34a98ec2e76ad06bcebd"
+    },
+    {
+      "profit_usd": 117.22704989014828,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269990093,
+      "chain": null,
+      "id": "5407dc5c60553e0b3ad6449ef817dc76f5bda1fc5ebc22b789e1bceacc1ed6a8",
+      "tx_hash": "c97dddae248bdc57fb70c493ed9994794fbe26728e6ec7bb41a5404bedead7ea"
+    },
+    {
+      "profit_usd": 79.11683034165476,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 270026591,
+      "chain": null,
+      "id": "5905335cf1285e14194ad1ad4bd31a5b56c6f3311d93172107568c12c4961aaa",
+      "tx_hash": "eb0068fe731242f48e529aa6607cd70cd782397a1f19d050875c16931ce441f8"
+    },
+    {
+      "profit_usd": 41.908511917281935,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269982245,
+      "chain": null,
+      "id": "b552b5be4cadbe6803bcb76e468a325e5abf97809f08aea010b0d81f74fcb83b",
+      "tx_hash": "4586503f21014cfa50b44ebec761c16a4953eb6beb32630a9dfd95bc35ad42f3"
+    },
+    {
+      "profit_usd": 38.86282040639535,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269879113,
+      "chain": null,
+      "id": "b5939dad2acb01dc0d1c23796557ad3db67a7b2e4cf4f72d8a0fa1bb64918799",
+      "tx_hash": "edfbf883c4c4e0f371e72067c51dad62d533a0ed46adc2162d36f165f1d5b556"
+    },
+    {
+      "profit_usd": 34.91429501633246,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 270062655,
+      "chain": null,
+      "id": "214b60bce3b10528dfb6c051d3acac8584c54a11853fc1857cd15c72d3fa37d3",
+      "tx_hash": "1335e76cf7378f600eba8167183f927417bd72c62666176fc33879617cd58771"
+    },
+    {
+      "profit_usd": 34.19463616247328,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269852439,
+      "chain": null,
+      "id": "220545a360f8bafb16c35b519792374805eefd1718df11dda99e23a018cc8e5d",
+      "tx_hash": "a94523ab390d387a1f454dd112dee7806259e7867209eb4810d94eba904d26e1"
+    },
+    {
+      "profit_usd": 31.62061597573131,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269963917,
+      "chain": null,
+      "id": "53197c727f4ef1f450f39745e0b722275e9f3e7664c46465a79e53a7392bd750",
+      "tx_hash": "dc0c1312e53090ca250df3bfef73db9de298475da7f880af1b7223a87c00242c"
+    },
+    {
+      "profit_usd": 30.340687653653127,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 269771645,
+      "chain": null,
+      "id": "efa43fec4861cb0750b8eaeb76bc88122e215017becc2512558756a66b745830",
+      "tx_hash": "7a05766a65776bce16c153df59dfabbe1f9ff4d7762d6b204a0d3523a8a5f830"
+    }
+  ],
+  "detection_base": [
+    {
+      "profit_usd": 9106.754090152312,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21822773,
+      "chain": null,
+      "id": "95c83dc794291b0e4c0b425fff40767658e6ce23d0dbc04adc87d47f8280307d",
+      "tx_hash": "badacb26b49adf8a92716de7ce063508054cb4ab245b2f8f3ab00e382951e83d"
+    },
+    {
+      "profit_usd": 3385.064028550451,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21822773,
+      "chain": null,
+      "id": "8b2963ca0024d154886ef1d54285da1684200106eeb02c55cbd2f30d5edbfdad",
+      "tx_hash": "ed36b760b9585052a9faa9193edfea45bbe6f2896f2f5d83d5f1f63465f2d70c"
+    },
+    {
+      "profit_usd": 1103.0367259168136,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21855290,
+      "chain": null,
+      "id": "43746d0688b789da88107e051f776607e7ed9d91e635da128a984a36c0758eca",
+      "tx_hash": "6bfc3c16805340025ae167821a5ae47e076036c9eb148f14f0cdd65fa764a1b9"
+    },
+    {
+      "profit_usd": 1091.7413452650821,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21818807,
+      "chain": null,
+      "id": "2c8e678786f8a37fa64d388c8ab699cadd0bdf2f8dd50b88de3a3a2e0a3227aa",
+      "tx_hash": "13bf1a0e9cd459db57ab6e0dcd738b78db05aaa651bee9597b7b7575adbd712c"
+    },
+    {
+      "profit_usd": 996.0617657810645,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21822530,
+      "chain": null,
+      "id": "fb1c9fffe9d1fd444919be50a297ae09f4857803808e5180d4fac61a00a7ed75",
+      "tx_hash": "486d5a577624b99ea1c64562668a89f70fc3e2ba20735823206eedd7f6c99a45"
+    },
+    {
+      "profit_usd": 973.9300111854825,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21832296,
+      "chain": null,
+      "id": "e9f9380d6891a48f0897e818b39888f26185936ade313cb99aedff4579411ee1",
+      "tx_hash": "99402007f8c49c92e4ffec9fbae4551a01dc8e0fd66de93359c9b6af4a1c92fa"
+    },
+    {
+      "profit_usd": 536.0975055385728,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21815611,
+      "chain": null,
+      "id": "400049c79ee749582e8d0110cb7c8560a1c2b0f6a3f2e436f35dbd94accc6c16",
+      "tx_hash": "de796ce73a4c327f68e332a7ba58792034c861a9d24dadd6595436c6041b99d3"
+    },
+    {
+      "profit_usd": 478.5605626473605,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21830399,
+      "chain": null,
+      "id": "a3c6413fe4940e5751d3540f7aa3d216bf8c7d610cdff3487d87128a3e78960e",
+      "tx_hash": "0217dfbba8adcca52bf840941c13219953b644120333918ad855f865926741dc"
+    },
+    {
+      "profit_usd": 477.4205216640173,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21845859,
+      "chain": null,
+      "id": "e92ad1255dfd9fe43dfacc7851a8974e34fabbeb78e4bb5e1fdb69f2b6962ffe",
+      "tx_hash": "b391a6d0724d81213bc960fff492aacafc6855448e26be187f64735b0a26d7b0"
+    },
+    {
+      "profit_usd": 359.9244594029176,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 21848847,
+      "chain": null,
+      "id": "9c095dfd168f8ef1b650a2a88dc3dda43293be555cd218ac252573b7f16b28c8",
+      "tx_hash": "b4b70d2742a2a3babc3b7089172f83dcad0f701dba14cff4fc37be4eaef2dbf8"
+    }
+  ],
+  "detection_optimism": [
+    {
+      "profit_usd": 7.770361249272162,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127425299,
+      "chain": null,
+      "id": "293c25f3064240673ae53b06de8846c1ad735d6e91c67d2fde5634c817928bf9",
+      "tx_hash": "b105aa9875857680abd61b83aa28132526e91f5b1a90b5f1e9d08186888b62e8"
+    },
+    {
+      "profit_usd": 4.462863291467173,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127446038,
+      "chain": null,
+      "id": "8ffacd5d3a5bada8f71c24dc662a1f0e5a204567b1111620da4197e609d56bde",
+      "tx_hash": "b542c39abaa823f216c97acf3072d54e7eee172a347425e768bacdc17ab6202c"
+    },
+    {
+      "profit_usd": 3.9174205136325684,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438242,
+      "chain": null,
+      "id": "c233dd7533d7f1d6aab7c091b42358a0ad06e69763c2b879889f2c1de989559b",
+      "tx_hash": "5493ad37bcd57756aedc38428254424815679a3fdaca8c12ec27a2a33e1e79cf"
+    },
+    {
+      "profit_usd": 3.6527675777852027,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438227,
+      "chain": null,
+      "id": "e375d3c1c809dabdbf3bb72bcb3ade1f40e0e3e1da1635d261337c189d253b5c",
+      "tx_hash": "7ff28dd4fb343184e66604f55c660ccf7087d038d959a23d1c1df4b9c7df4b93"
+    },
+    {
+      "profit_usd": 3.546213409281296,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438416,
+      "chain": null,
+      "id": "982bf63b5bc2e23dabee81cdec3bb09fb2d7ad36099597975ede8842f2f39743",
+      "tx_hash": "8a039322395fc825ba30e6e49a345b580445031e6c5583353e6f6a9b701e85f5"
+    },
+    {
+      "profit_usd": 3.2647878583690115,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438241,
+      "chain": null,
+      "id": "cf57df0e7cd439bfda1643f879c3b09798435a618b60029617440ce1513905e8",
+      "tx_hash": "3b00b1c95bd7c861203204a805e60a8471ae0cd85742a215208c0ccba9b10a8b"
+    },
+    {
+      "profit_usd": 2.758838959526567,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438240,
+      "chain": null,
+      "id": "cc2cabaf61f7f74f731a0a278b2108d508dad032bc75f0f038d19891e9ac5ff7",
+      "tx_hash": "030d510e4f27e34ca292bcb41165ac94960c8d22fbd462ca1885445d5079e179"
+    },
+    {
+      "profit_usd": 2.645422235844106,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127438241,
+      "chain": null,
+      "id": "8f65f749ce782478408df191778e128d44816313fad3b935d218d685d4377141",
+      "tx_hash": "facf6d915c2ae48ae56a3e6e26aee60d95b5ea9916499aeeb719fa0c56498c3b"
+    },
+    {
+      "profit_usd": 1.994181878575456,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127433573,
+      "chain": null,
+      "id": "fc489e73937b05d67502b25f0b02b0002b26f930c5855925cf7e6492654d9601",
+      "tx_hash": "b0737691239a7ac95cd8a281e35b6ab4944370b6e5efb17df08a487e271ddf01"
+    },
+    {
+      "profit_usd": 1.8571135243566321,
+      "timestamp_range_start": null,
+      "timestamp_range_stop": null,
+      "block_number": 127413604,
+      "chain": null,
+      "id": "114a70cd05be42d5db684e2c129d78b13055cba8e82699c4e4ed6d4be9ebaf1a",
+      "tx_hash": "a06240eafe2240768d743230504cff6e443589a0eaea463a1e83a7cacedf7710"
+    }
+  ]
+}
