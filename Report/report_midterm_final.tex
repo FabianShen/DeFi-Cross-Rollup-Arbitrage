@@ -1,0 +1,572 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{setspace}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black
+}
+
+\setstretch{1.1}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{0pt}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{\textbf{Mid-Period Progress Report: Cross-Rollup Arbitrage Detection and Simulation on Decentralized Exchanges}}
+\author{}
+\date{March 27, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report presents the current research progress on cross-rollup arbitrage detection and simulation across decentralized exchanges, with primary coverage of Arbitrum, Base, and Optimism. The implemented system consists of two complementary components: (i) a single-chain detection pipeline that scans swap activity and reconstructs cyclic arbitrage transactions at the transaction level, and (ii) a simulation pipeline that enumerates reserve-token cycles, replays them under updated automated market maker (AMM) pool states, and estimates theoretical profitability under a deterministic synchronization rule.
+
+The verified data stack is hybrid. The pool universe is seeded from Dune; reserve-token prices, initial pool states, and replay event histories are obtained from Allium; local MongoDB stores normalized pool updates and exported opportunities; and direct RPC access is used where on-chain state or event logs must be queried. The protocol mechanics currently implemented are Uniswap v2 and Uniswap v3, while the profitable simulation exports presently available are entirely Uniswap v3-based. The path-construction engine supports single-chain reserve-token cycles and pairwise cross-rollup spatial cycles of length up to five.
+
+The current committed output artifacts are dated November 1, 2024 (UTC). On those stored exports, cross-chain simulation produces 43{,}199 windows and \$1.764M of total theoretical profit, while single-chain simulation produces 122{,}401 windows and \$890.98 of total theoretical profit. Realized single-chain detection outputs are far smaller in magnitude but economically more credible because they incorporate transaction costs: Base contributes the largest total detected profit (\$27{,}610.34), Arbitrum contributes \$1{,}297.31, and Optimism contributes \$113.08. These findings are informative, but they should be interpreted as research-stage results rather than deployable cross-rollup performance, because the present simulation does not yet model bridge settlement delay, inventory constraints, or adversarial competition.
+\end{abstract}
+
+\section{Introduction}
+
+Liquidity fragmentation across Ethereum rollups can create temporary price discrepancies even when the assets are economically equivalent. In the current project, that problem is studied over Arbitrum, Optimism, and Base, with AMM mechanics drawn from Uniswap v2 and Uniswap v3. The economically relevant friction is not limited to AMM slippage; on OP Stack-style systems, transaction cost itself is two-part, combining L2 execution fees with an L1 data-availability component. Any serious empirical claim about arbitrage therefore must distinguish between \emph{path profitability under synchronized states} and \emph{profitability under executable cross-domain settlement}.
+
+The current research is organized around four questions:
+\begin{enumerate}[label=\arabic*.]
+    \item What data sources, chains, pool types, and reserve assets are currently active in the project?
+    \item How do the detection and simulation algorithms operate?
+    \item What do the currently stored empirical outputs show?
+    \item Which findings are already supported by implemented results, and which remain part of future work?
+\end{enumerate}
+
+The present system should therefore be understood as a research infrastructure for opportunity generation, filtering, and replay, rather than as a production deployment stack.
+
+\section{System Scope}
+
+The implemented framework operates entirely off-chain as a research and simulation environment. Its purpose is to identify candidate opportunities, reconstruct realized single-chain arbitrage transactions, and replay reserve-token cycles under evolving pool states. The project does not yet include a bridge-aware cross-rollup executor or a smart-contract settlement layer.
+
+\subsection{Pool universe and reserve-token mapping}
+
+The pool universe is seeded from Dune and then filtered to retain Uniswap pools with valid fee metadata and unique pool addresses. The reserve-token seed set is
+\[
+\mathcal{R} = \{\mathrm{WETH},\mathrm{USDC},\mathrm{USDT},\mathrm{WBTC},\mathrm{DAI}\}.
+\]
+
+Applying the current filtering logic to the committed pool universe yields:
+\begin{itemize}[leftmargin=1.5em]
+    \item 57 unique Arbitrum pools: 55 Uniswap v3 and 2 Uniswap v2;
+    \item 83 unique Base pools: 68 Uniswap v3 and 15 Uniswap v2;
+    \item 17 unique Optimism pools: all 17 are Uniswap v3.
+\end{itemize}
+
+The reserve-token address mapping is not uniform across chains. WETH, USDC, and USDT exist on all three rollups; DAI exists on Arbitrum and Optimism only; and WBTC appears only on Arbitrum in the committed pool universe. As a consequence, not every reserve asset can anchor a cross-rollup mapping.
+
+\subsection{Verified data and infrastructure sources}
+
+The current project combines off-chain indexers, local persistence, and direct chain access. Table~\ref{tab:sources} summarizes the verified data stack.
+
+\small
+\begin{longtable}{L{0.22\linewidth}L{0.22\linewidth}L{0.30\linewidth}}
+\caption{Verified data and infrastructure sources.}
+\label{tab:sources}\\
+\toprule
+Component & Verified source & Technical role \\
+\midrule
+\endfirsthead
+\toprule
+Component & Verified source & Technical role \\
+\midrule
+\endhead
+Pool universe & Dune query API & Seeds the pool universe used in downstream filtering and path construction. \\
+Reserve-token prices & Allium Explorer & Provides reserve-token price time series used for valuation and profit translation. \\
+Initial v2 state & Allium Explorer & Provides initial reserve balances for constant-product pools. \\
+Initial v3 state & Allium Explorer & Provides historical swap, mint, and burn information needed to initialize tick, liquidity, and square-root price state. \\
+Replay event history (v2) & Allium Explorer & Provides replayable event histories for Uniswap v2 pools. \\
+Replay event history (v3) & Allium Explorer & Provides replayable event histories for Uniswap v3 pools. \\
+Tick initialization & Allium Explorer & Reconstructs tick-liquidity net maps from mint and burn histories. \\
+Fallback v3 state queries & RPC endpoints & Retrieves \texttt{slot0()} and \texttt{liquidity()} when state must be refreshed at the relevant block. \\
+Single-chain detection logs & Chain RPC providers & Retrieves swap logs and transaction receipts for transaction-level arbitrage reconstruction. \\
+Persistence and replay store & Local MongoDB & Stores normalized pool updates and exported opportunity collections. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+This source split matters for interpretation. The simulation pipeline is primarily driven by indexed historical data replayed through MongoDB, whereas the detection pipeline reconstructs realized arbitrage from observed on-chain transaction activity.
+
+\section{Data Methodology}
+
+\subsection{Covered rollups and protocols}
+
+The currently implemented rollups are:
+\begin{itemize}[leftmargin=1.5em]
+    \item Arbitrum,
+    \item Base,
+    \item Optimism.
+\end{itemize}
+
+The AMM protocols currently modeled are:
+\begin{itemize}[leftmargin=1.5em]
+    \item Uniswap v2,
+    \item Uniswap v3.
+\end{itemize}
+
+Although the broader research motivation includes cross-rollup DEX arbitrage more generally, the currently stored empirical outputs are drawn from the Uniswap-based subset of that design.
+
+\subsection{State initialization and temporal alignment}
+
+The replay engine initializes each pool from stored initial state. For Uniswap v2 pools, the required state variables are token reserves. For Uniswap v3 pools, the replay requires current tick, square-root price, active liquidity, and a tick-liquidity net map.
+
+Reserve-token prices are aligned by nearest previous timestamp:
+\[
+p_{c,a}(t)=p_{c,a}(s^{\star}),
+\qquad
+s^{\star}=\max\{s\le t:s\in\mathcal{T}_{c,a}\},
+\]
+where \(c\) denotes chain, \(a\) token address, and \(\mathcal{T}_{c,a}\) is the observed timestamp set for that token-price series. This is a backward-fill rule rather than interpolation.
+
+\section{Single-Chain Detection Methodology}
+
+\subsection{Transaction-level arbitrage reconstruction}
+
+The single-chain detector scans swap logs for Uniswap v2 and Uniswap v3 swap events, groups them by block number and transaction index, orders them by log index, and tests whether the resulting sequence forms a valid cyclic token path. This is not a triangle-only detector. In the currently stored outputs, realized detected paths span:
+\begin{itemize}[leftmargin=1.5em]
+    \item 2 to 6 swaps on Arbitrum;
+    \item 2 to 7 swaps on Base;
+    \item 2 to 5 swaps on Optimism.
+\end{itemize}
+
+For a candidate sequence \(S=(s_1,\dots,s_m)\), the continuity checks are
+\begin{align}
+\mathrm{token}^{\mathrm{out}}_k &= \mathrm{token}^{\mathrm{in}}_{k+1}, \\
+\mathrm{amt}^{\mathrm{out}}_k &\ge \mathrm{amt}^{\mathrm{in}}_{k+1}, \\
+\mathrm{pool}_k &\neq \mathrm{pool}_{k+1},
+\end{align}
+for each adjacent pair \((s_k,s_{k+1})\). A cycle closes when the first input token equals the final output token, with ETH and WETH treated as equivalent wrappers. The first input amount must also be no larger than the closing output amount.
+
+Accordingly, the detector is best described as \emph{transaction-level cyclic swap reconstruction under token continuity constraints}.
+
+\subsection{Gain, cost, and net profit}
+
+For a detected sequence, the token balance for asset \(a\) is
+\[
+B_a = \sum_{j=1}^{m} \mathrm{out}_{j,a} - \sum_{j=1}^{m} \mathrm{in}_{j,a}.
+\]
+Using token decimals \(d_a\) and price lookup \(p_a(t)\) at block timestamp \(t\), the detector computes
+\[
+G(t)=\sum_{a:B_a>0}\frac{B_a}{10^{d_a}}p_a(t),
+\qquad
+C_{\mathrm{token}}(t)=\sum_{a:B_a<0}\frac{-B_a}{10^{d_a}}p_a(t).
+\]
+Net profit is then
+\[
+\Pi(t)=G(t)-C_{\mathrm{token}}(t)-C_{\mathrm{gas}}(t).
+\]
+
+For Arbitrum, the gas term is computed from gas used and gas price. For Base and Optimism, the gas term includes both L2 execution and the L1 data-availability component where those receipt fields are available. As a consequence, the stored single-chain detection outputs already represent gas-adjusted realized profits rather than gross spread only.
+
+\section{Arbitrage Detection Algorithm for Replay Simulation}
+
+\subsection{Reserve-token cycle construction}
+
+The path-construction engine builds a graph over AMM pools and reserve-token endpoints, with maximum path length
+\[
+L_{\max}=5.
+\]
+
+Single-chain paths are reserve-token cycles that begin and end in the same reserve asset. Cross-rollup paths are pairwise concatenations of two chain-local reserve-token paths. If \(M_{c_1\rightarrow c_2}\) denotes the symbol-based address mapping from chain \(c_1\) to chain \(c_2\), the builder seeks path pairs satisfying
+\[
+M_{c_1\rightarrow c_2}\big(\mathrm{end}(\pi^{(1)})\big)=\mathrm{start}(\pi^{(2)}),
+\qquad
+M_{c_2\rightarrow c_1}\big(\mathrm{end}(\pi^{(2)})\big)=\mathrm{start}(\pi^{(1)}),
+\]
+with
+\[
+|\pi^{(1)}|+|\pi^{(2)}|\le 5.
+\]
+
+This design implies that the implemented cross-rollup strategy class is spatial cross-rollup arbitrage via reserve-token mapping rather than a coded bridge-transfer protocol.
+
+\subsection{Gain screen and route valuation}
+
+Before exact replay, the engine applies a route-level log-gain screen. For a Uniswap v2 route, the fee-adjusted directional price is
+\[
+P^{(v2)}=
+\begin{cases}
+\dfrac{R_{\mathrm{out}}}{R_{\mathrm{in}}}10^{d_{\mathrm{in}}-d_{\mathrm{out}}}(1-0.003), & \text{if zero-for-one},\\[1em]
+\dfrac{R_{\mathrm{in}}}{R_{\mathrm{out}}}10^{d_{\mathrm{out}}-d_{\mathrm{in}}}(1-0.003), & \text{otherwise.}
+\end{cases}
+\]
+
+For a Uniswap v3 route, the code reconstructs the implied tick from the stored Q64.96 square-root price:
+\[
+\tau = \log_{1.0001}\!\left(\frac{\texttt{sqrt\_price}^2}{2^{192}}\right).
+\]
+The directional price is then
+\[
+P^{(v3)}=
+\begin{cases}
+1.0001^{\tau}10^{d_{\mathrm{in}}-d_{\mathrm{out}}}(1-f), & \text{if zero-for-one},\\[0.6em]
+\left(1.0001^{\tau}10^{d_{\mathrm{out}}-d_{\mathrm{in}}}\right)^{-1}(1-f), & \text{otherwise,}
+\end{cases}
+\]
+where \(f\) is the fee tier in decimal form.
+
+Each route contributes
+\[
+g_k=-\log_2 P_k,
+\qquad
+G(\pi)=\sum_k g_k,
+\]
+and a path is retained only if
+\[
+-1<G(\pi)<0.
+\]
+
+The engine also computes a liquidity key per route. For v2 it uses \(\sqrt{R_{\mathrm{in}}R_{\mathrm{out}}}\); for v3 it uses active liquidity. The path is ranked using the minimum normalized liquidity across its routes. This should be interpreted as a coarse prioritization heuristic rather than a dimensionally exact liquidity measure.
+
+\subsection{Exact replay and slippage model}
+
+If every route in a path is Uniswap v2 and the total path length is 2, 3, 4, or 5, the engine applies closed-form optimization routines. The underlying swap function is
+\[
+\Delta y
+=
+R_{\mathrm{out}}-\frac{R_{\mathrm{in}}R_{\mathrm{out}}}{R_{\mathrm{in}}+0.997\Delta x}
+=
+\frac{0.997\Delta x\,R_{\mathrm{out}}}{R_{\mathrm{in}}+0.997\Delta x}.
+\]
+
+Otherwise, the engine optimizes input size numerically through ternary search:
+\[
+x^{\star}\in\arg\max_{x\ge 0}\Pi_{\pi}(x).
+\]
+
+For Uniswap v3, replay steps across ticks. Let \(P\) denote normalized square-root price and \(L\) active liquidity. The token deltas within a tick range are
+\[
+\Delta x = L\left(\frac{1}{P_b}-\frac{1}{P_a}\right),
+\qquad
+\Delta y = L(P_b-P_a),
+\]
+with sign determined by swap direction. The next square-root price is updated as
+\[
+P'=
+\begin{cases}
+\dfrac{LP}{L+\Delta x P}, & \text{zero-for-one},\\[0.8em]
+P+\dfrac{\Delta x}{L}, & \text{one-for-zero}.
+\end{cases}
+\]
+The input amount is fee-adjusted by \((1-f)\) prior to the state transition.
+
+\section{Simulation Framework}
+
+\subsection{Conflict elimination and synchronization semantics}
+
+After replay, profitable paths are sorted by profit and greedily deconflicted: if a lower-ranked path shares any pool address with a higher-ranked one, it is discarded. Therefore the exported total profit per window is a sum of non-conflicting path profits rather than the sum over every individually positive path.
+
+The framework supports two replay modes:
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Single-chain mode:} iterates second by second, groups updates by block number within each second, and replays per updated block.
+    \item \textbf{Cross-chain mode:} iterates over a user-specified time window and replays all paths touched by updates whose timestamps fall in that interval.
+\end{itemize}
+
+The currently stored cross-chain exports all satisfy
+\[
+\texttt{timestamp\_range\_stop}-\texttt{timestamp\_range\_start}=2\text{ seconds}.
+\]
+Hence the stored cross-rollup study is a 2-second wall-clock synchronization experiment rather than a bridge-aware latency model.
+
+In cross-chain mode, pool updates are deduplicated by pool address within each window. The retained record serves as a representative per-pool state for that window, which is appropriate for deterministic replay but not equivalent to executable cross-domain settlement.
+
+\subsection{Established progress}
+
+The following progress has already been achieved:
+\begin{enumerate}[label=\arabic*.]
+    \item multi-rollup data coverage for Arbitrum, Base, and Optimism;
+    \item protocol-specific replay for both Uniswap v2 and Uniswap v3 mechanics;
+    \item reserve-token path generation for both single-chain and pairwise cross-rollup cycles;
+    \item incremental state updating driven by observed pool changes;
+    \item gain-based filtering and exact replay for selected candidates;
+    \item conflict-aware aggregation of profitable paths;
+    \item MongoDB-based persistence of replay and detection outputs.
+\end{enumerate}
+
+Accordingly, the current state of the project is best described as a functioning research prototype for cross-rollup arbitrage generation and replay, with robust pool-side mechanics and an execution layer that remains incomplete for full deployment realism.
+
+\section{Preliminary Data Analysis}
+
+All currently stored result files correspond to November 1, 2024 (UTC). The earliest stored simulation timestamp is \(1730419200\), i.e., 2024-11-01 00:00:00 UTC, and the detection exports lie on the same date.
+
+\subsection{Aggregate metrics}
+
+Table~\ref{tab:summary_stats} reports aggregate row-level outputs over the stored exports.
+
+\begin{table}[H]
+\centering
+\caption{Aggregate metrics over currently stored November 1, 2024 exports. Detection PnL rows count only rows with numeric profit fields.}
+\label{tab:summary_stats}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Dataset & Files & Rows & PnL rows & Positive & Zero & Negative & Sum PnL (USD) & Mean PnL (USD) \\
+\midrule
+Cross-chain simulation & 5 & 43{,}199 & 43{,}199 & 34{,}886 & 8{,}313 & 0 & 1{,}764{,}433.18 & 40.8443 \\
+Single-chain simulation & 13 & 122{,}401 & 122{,}401 & 13{,}716 & 108{,}685 & 0 & 890.98 & 0.007279 \\
+Detection: Arbitrum & 1 & 5{,}409 & 5{,}235 & 4{,}176 & 0 & 1{,}059 & 1{,}297.31 & 0.2478 \\
+Detection: Base & 3 & 22{,}860 & 21{,}905 & 17{,}090 & 0 & 4{,}815 & 27{,}610.34 & 1.2605 \\
+Detection: Optimism & 1 & 7{,}890 & 7{,}846 & 7{,}741 & 0 & 105 & 113.08 & 0.0144 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Three conclusions follow immediately.
+\begin{enumerate}[label=\arabic*.]
+    \item Cross-chain replay dominates single-chain replay in the stored simulation outputs. The gap between \$1.764M and \$890.98 should not be interpreted naively as deployable superiority; it is more plausibly related to the permissive 2-second synchronization rule and the absence of bridge settlement frictions.
+    \item Realized single-chain detection is much smaller in scale but methodologically stronger, because detection rows incorporate transaction costs and can therefore be positive or negative.
+    \item Base detection is highly heavy-tailed. Its mean net profit is \$1.2605, but that average is influenced materially by a small number of very large outliers.
+\end{enumerate}
+
+\subsection{Simulation output structure}
+
+The profitable simulation exports are more specific than Table~\ref{tab:summary_stats} alone suggests.
+\begin{itemize}[leftmargin=1.5em]
+    \item All profitable simulation paths in the currently stored outputs are Uniswap v3-only.
+    \item All profitable cross-rollup paths are pairwise rather than three-rollup opportunities.
+    \item Path lengths are variable rather than restricted to triangular cycles.
+\end{itemize}
+
+In the stored outputs, profitable cross-rollup path lengths are distributed as follows:
+\[
+2:10{,}819,\qquad 3:25{,}963,\qquad 4:12{,}560,\qquad 5:8{,}354.
+\]
+Profitable single-chain path lengths are distributed as
+\[
+2:204,\qquad 3:6{,}536,\qquad 4:3{,}726,\qquad 5:4{,}491.
+\]
+
+At the opportunity level, the currently stored outputs contain:
+\begin{itemize}[leftmargin=1.5em]
+    \item 57{,}696 profitable non-conflicting cross-rollup opportunities, with mean profit \$30.58, median profit \$0.5207, mean input notional \$49{,}984.15, and median input notional \$1{,}536.20;
+    \item 14{,}957 profitable non-conflicting single-chain opportunities, with mean profit \$0.05957, median profit \$0.01492, mean input notional \$163.82, and median input notional \$75.40.
+\end{itemize}
+
+The cross-rollup distribution is therefore highly skewed. Arbitrum--Base opportunities sum to \$878{,}535.32, Base--Optimism opportunities sum to \$849{,}791.36, and Arbitrum--Optimism opportunities sum to \$36{,}106.49. Mean profit per profitable opportunity is highest on Base--Optimism (\$90.58), followed by Arbitrum--Base (\$21.89), with Arbitrum--Optimism materially smaller (\$4.42).
+
+The replay engine is also selective. Averaged across stored windows:
+\begin{itemize}[leftmargin=1.5em]
+    \item cross-chain replay touches 11{,}443.08 updated paths per window, keeps 354.86 positive-gain candidates, and simulates 29.73 paths exactly;
+    \item single-chain replay touches 5{,}597.22 updated paths per window, keeps 115.10 positive-gain candidates, and simulates 2.38 paths exactly.
+\end{itemize}
+
+This large reduction indicates that most computational effort lies in state propagation and coarse filtering, not in exact replay.
+
+\subsection{Detection economics}
+
+Table~\ref{tab:detection_econ} reports the detected single-chain economics using the stored gross gain, total cost, and net profit fields.
+
+\begin{table}[H]
+\centering
+\caption{Detected single-chain economics from currently stored outputs. Max drawdown is computed on cumulative net profit after sorting by block timestamp.}
+\label{tab:detection_econ}
+\begin{tabular}{lrrrrrr}
+\toprule
+Chain & Mean gain & Mean cost & Mean net & Median net & Success rate & Max DD \\
+\midrule
+Arbitrum & \$0.3831 & \$0.1318 & \$0.2478 & \$0.00646 & 79.77\% & \$38.34 \\
+Base & \$1.6867 & \$0.4109 & \$1.2605 & \$0.00466 & 78.02\% & \$7.02 \\
+Optimism & \$0.04006 & \$0.02561 & \$0.01441 & \$0.00130 & 98.66\% & \$0.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This table sharpens the interpretation.
+\begin{itemize}[leftmargin=1.5em]
+    \item Base has the largest realized outliers, but not the largest typical trade. Its mean net profit is highest, whereas the median detected net profit is only \$0.00466.
+    \item Arbitrum is economically meaningful but less extreme. Its average detected profit is \$0.2478, with the largest cumulative drawdown among the three chains once trades are ordered through time.
+    \item Optimism has the smallest absolute dollar profits. Its success rate is the highest, but both mean and median profits are small.
+\end{itemize}
+
+The protocol mix in detection is broader than in replay. The most common realized patterns are v3-to-v3 and v3-to-v3-to-v3, but mixed v2-to-v3 and v3-to-v2 sequences also occur on Arbitrum and Base. Thus the single-chain detection framework is genuinely mixed-protocol, even though the profitable replay outputs currently stored are v3-only.
+
+\subsection{Sharpe ratio and success-rate interpretation}
+
+A methodological caution is necessary when discussing Sharpe ratios. The current outputs do not define a capital time series for a deployable portfolio with compounding, financing, inventory management, bridge lock-up, or execution failure. Consequently, any Sharpe ratio computed directly from per-opportunity profit rows would be an opportunity-level descriptive statistic rather than an investable strategy Sharpe.
+
+The appropriate descriptive object is therefore
+\[
+S_{\mathrm{opp}} = \frac{\mathbb{E}[\Pi]}{\sqrt{\mathrm{Var}(\Pi)}},
+\]
+where \(\Pi\) is per-opportunity net USD profit. This can be useful for comparing output dispersion across datasets, but it should not be annualized or presented as a portfolio Sharpe without further structure.
+
+A more defensible measure at the current stage is the success rate
+\[
+\mathrm{SuccessRate}=\frac{N_{+}}{N_{\mathrm{pnl}}},
+\]
+where \(N_{+}\) is the number of positive-profit observations and \(N_{\mathrm{pnl}}\) is the number of observations with non-null profit.
+
+Using the stored summary table, the implied success rates are approximately
+\[
+\mathrm{SuccessRate}_{\mathrm{cross\mbox{-}chain\ sim}}\approx 80.8\%,
+\qquad
+\mathrm{SuccessRate}_{\mathrm{single\mbox{-}chain\ sim}}\approx 11.2\%,
+\]
+and for the detection outputs
+\[
+\mathrm{SuccessRate}_{\mathrm{Arbitrum}}\approx 79.8\%,
+\qquad
+\mathrm{SuccessRate}_{\mathrm{Base}}\approx 78.0\%,
+\qquad
+\mathrm{SuccessRate}_{\mathrm{Optimism}}\approx 98.7\%.
+\]
+
+These quantities are informative as descriptive statistics, but they should not be interpreted as direct estimates of deployable hit rate under a full execution model.
+
+\subsection{Impact of L1/L2 gas costs on net profit}
+
+The stored detection outputs explicitly decompose gross gain, total cost, and net profit. If gross economic edge is denoted by \(G\) and total execution cost by \(C\), then
+\[
+\Pi = G-C.
+\]
+Hence
+\[
+\frac{\partial \Pi}{\partial C}=-1.
+\]
+
+The research implication is straightforward:
+\begin{enumerate}[label=\arabic*.]
+    \item for small-edge opportunities, gas cost often determines the sign of net profit;
+    \item for larger opportunities, cost still materially compresses the realized edge;
+    \item the current cross-rollup simulation does not yet implement a full bridge-cost layer, so its reported profits should be interpreted as partial-cost or upper-bound estimates rather than final executable P\&L.
+\end{enumerate}
+
+\subsection{Placeholder tables and figures for the final report}
+
+\begin{table}[H]
+\centering
+\caption{Placeholder: Cross-Chain Simulation Metrics by Window Length}
+\label{tab:window_metrics}
+\begin{tabular}{lcccc}
+\toprule
+Window Length & Updated Pools & Simulated Paths & Positive Paths & Total Profit (USD) \\
+\midrule
+1 second & --- & --- & --- & --- \\
+2 seconds & --- & --- & --- & --- \\
+5 seconds & --- & --- & --- & --- \\
+10 seconds & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Placeholder: Profit Decomposition by Chain}
+\label{tab:profit_decomp}
+\begin{tabular}{lcccc}
+\toprule
+Chain & Mean Gross Gain (USD) & Mean Cost (USD) & Mean Net Profit (USD) & Success Rate \\
+\midrule
+Arbitrum & --- & --- & --- & --- \\
+Base & --- & --- & --- & --- \\
+Optimism & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\fbox{\rule{0pt}{2.2in}\rule{0.9\linewidth}{0pt}}
+\caption{Placeholder: Distribution of Net Profit per Opportunity (single-chain versus cross-chain).}
+\label{fig:profit_hist}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\rule{0pt}{2.2in}\rule{0.9\linewidth}{0pt}}
+\caption{Placeholder: Gross Gain, Cost, and Net Profit by Rollup.}
+\label{fig:cost_profit}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\rule{0pt}{2.2in}\rule{0.9\linewidth}{0pt}}
+\caption{Placeholder: Sensitivity of Simulated Profit to Cross-Chain Time Window.}
+\label{fig:window_sensitivity}
+\end{figure}
+
+\section{Limitations}
+
+Several limitations should be stated plainly at the current stage.
+
+\subsection{No bridge-aware execution layer}
+
+Cross-rollup paths are created by reserve-token address mapping, not by an explicit bridge object. There is no coded representation of canonical bridge delay, fast-bridge fees, bridge failure probability, or inventory pre-positioning across rollups. Consequently, the cross-chain simulation outputs should be interpreted as state-consistent upper bounds under a 2-second synchronization rule rather than deployable cross-rollup P\&L.
+
+\subsection{Cross-rollup synchronization remains coarse}
+
+Single-chain replay respects block-local update order. Cross-chain replay is necessarily coarser: it uses wall-clock windows and a representative per-pool update within each window. This is a reasonable research approximation, but it is not equivalent to executable cross-domain settlement.
+
+\subsection{Provider configuration is only partially reproducible}
+
+The current framework verifies the use of chain RPC endpoints for detection and state refresh, but the full provider configuration is not fully documented in the committed outputs. This does not affect the logic of the methodology, but it does matter for exact reproduction of the stored experiments.
+
+\subsection{Date parameters are not fully normalized across the pipeline}
+
+Most of the stored replay outputs are parameterized around November 1, 2024, but not all data-download defaults are normalized to the same date constants. Reproducing the exact stored experiments therefore requires manual alignment of those parameters.
+
+\subsection{Trust Capital remains a future extension}
+
+A reliability score under the label \emph{Trust Capital} is conceptually useful, but it is not yet implemented as an explicit computed metric in the current framework. It is therefore more appropriate to present it as a future extension than as an established component of the present methodology.
+
+\section{Conclusion}
+
+At the current mid-period stage, the project has established a substantive research framework for single-chain realized arbitrage detection and pairwise cross-rollup opportunity replay, built around Uniswap v2/v3 mechanics, Dune and Allium data ingestion, and MongoDB-backed incremental state updates.
+
+The main empirical finding is that the currently stored 2-second cross-rollup replay produces many large theoretical opportunities, whereas single-chain detection outputs are economically smaller but methodologically more credible because they already include transaction-cost accounting. The cross-rollup replay results are therefore valuable as evidence that state fragmentation can generate large apparent opportunities, but they should not yet be interpreted as deployable performance until bridge timing, inventory, and competitive execution are modeled explicitly.
+
+The most important next steps are to strengthen the execution realism rather than simply expand the count of candidate paths. In particular, the project would benefit from a bridge layer, a genuine multi-window sensitivity study, more standardized reproduction settings, and an explicit reliability metric for state quality. With these additions, the framework would move from a strong research prototype toward a more rigorous empirical model of cross-rollup arbitrage under realistic DeFi and MEV constraints.
+
+\begin{thebibliography}{9}
+
+\bibitem{uniswapv2}
+Hayden Adams, Noah Zinsmeister, and Dan Robinson.
+\newblock \emph{Uniswap v2 Core}.
+\newblock Uniswap, 2020.
+
+\bibitem{uniswapv3}
+Adams, Zinsmeister, Salem, Keefer, and Robinson.
+\newblock \emph{Uniswap v3 Core}.
+\newblock Uniswap, 2021.
+
+\bibitem{opfees}
+Optimism Documentation.
+\newblock \emph{Transaction Fees on OP Mainnet}.
+
+\bibitem{basedocs}
+Base Documentation.
+\newblock \emph{Network Fees and OP Stack Fee Components}.
+
+\bibitem{duneapi}
+Dune Documentation.
+\newblock \emph{Analytics API Documentation}.
+
+\bibitem{alliumexplorer}
+Allium Documentation.
+\newblock \emph{Allium Explorer and Query Interface}.
+
+\end{thebibliography}
+
+\end{document}
